@@ -57,25 +57,24 @@ typedef struct{
 
 
 
-
-void criarHeap(int *lista,int inicio,int fim){
+void criarHeap(Pacote *pacote,int inicio,int fim){
     //aux será relativamente o pai
-    int aux = lista[inicio];
+    Pacote aux = pacote[inicio];
     //calculamos o primeiro filho(j)
     int j=inicio*2+1;
     while(j<= fim){
         if(j<fim){
             //verificação para saber qual dos filhos é menor,caso o filho(j) for o menor,incrementamos a posição na lista e vamos atrás do outro filho
             //caso contrário,continumaos no (j)
-            if(lista[j]<lista[j+1]){
+            if(pacote[j].indice<pacote[j+1].indice){
                 j++;
             }
         }
         //verificação para saber se a posição do pai é maior do que o do filho,por que a posição do pai deve sempre ser maior do que a dos filhos
         //caso essa verificação retorne que "isso é falso",e trocamos a posição do pai pela posição do 
         //processo se repete
-        if(aux<lista[j]){
-            lista[inicio] = lista[j];
+        if(aux.indice<pacote[j].indice){
+            pacote[inicio] = pacote[j];
             inicio=j;
             j= 2*inicio+1;
         } else {
@@ -83,22 +82,23 @@ void criarHeap(int *lista,int inicio,int fim){
         }
     }
     //antigo pai ocupa o lugar do último filho analisado
-    lista[inicio] = aux;
+    pacote[inicio] = aux;
 }
 
 //todo elemento pai da árvore possui 2 filhos,o pai tem como posição(i) e os filhos(2*i+1) e (2*i+2)
-void heapsort(int *lista,int fim){
-    int i,aux;
+void heapsort(Pacote *pacote,int fim){
+    int i;
+    Pacote aux;
     //for para percorrer/preencher o vetor da metade do vetor para o início
     for(i= (fim-1)/2;i>=0;i--){
-        criarHeap(lista,i,fim-1);
+        criarHeap(pacote,i,fim-1);
     }
     //pegamos o maior elemento da heap(topo) e colocar ele na posição i(última posição do vetor) ordenando-o
     for(i =fim-1;i>=1;i--){
-        aux = lista[0];
-        lista[0] = lista[i];
-        lista[i]= aux;
-        criarHeap(lista,0,i-1);
+        aux = pacote[0];
+        pacote[0] = pacote[i];
+        pacote[i]= aux;
+        criarHeap(pacote,0,i-1);
     }
 }
 
@@ -131,25 +131,49 @@ int main(int argc, char *argv[]) {
         if (pacote[i].dadosPacote == NULL) {
             printf("ERRO\n");
         }    
+
         for(int j=0;j<pacote[i].tamanho;j++){
             pacote[i].dadosPacote[j] = (char *)malloc(512 * sizeof(char));
             if (pacote[i].dadosPacote[j] == NULL) {
                 printf("ERRO: Falha ao alocar memória para dados do pacote.\n");
             }
-            fscanf(arquivo, "%s", pacote[i].dadosPacote[j]);
+            fscanf(arquivo, "%s", pacote[i].dadosPacote[j]);   
         }
-
-
     }
 
-    for (int i = 0; i < totalPacotes; i++) {
-        fprintf(saida,"Pacote %d (Índice %d): ", i, pacote[i].indice);
-        for (int j = 0; j < pacote[i].tamanho; j++) {
-            fprintf(saida,"%s ", pacote[i].dadosPacote[j]);
+    int indiceAtual = 0;
+    int lidos = 0;
+
+    while(indiceAtual<totalPacotes) {
+
+        int limite = indiceAtual + pularPacotes;
+        if(limite>totalPacotes) {
+            limite = totalPacotes;
         }
-        fprintf(saida,"\n");
+
+        heapsort(pacote,limite);
+
+        fprintf(saida, "|");
+        for (int i = lidos; i < limite; i++) {
+            if (pacote[i].indice == lidos) {
+                for (int j = 0; j < pacote[i].tamanho; j++) {
+                    fprintf(saida, "%s", pacote[i].dadosPacote[j]);
+                    if (j < pacote[i].tamanho - 1) {
+                        fprintf(saida, ",");
+                    }
+                }
+                fprintf(saida, "|");
+                lidos++;
+            }
+        }
+        
+        fprintf(saida, "\n");
+
+        indiceAtual = limite;
     }
-    // Liberar memória alocada
+    
+
+
     for (int i = 0; i < totalPacotes; i++) {
         for (int j = 0; j < pacote[i].tamanho; j++) {
             free(pacote[i].dadosPacote[j]);            
