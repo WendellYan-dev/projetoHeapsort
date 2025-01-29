@@ -1,6 +1,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct{
+    int indice;
+    int tamanho;
+    char **dadosPacote;
+}Pacote;
+
+
+// A empresa de telecomunicações **Poxim Tech** está construindo um sistema de comunicação baseado no **protocolo de datagrama do usuário (UDP)** para transferência de pacotes em redes **TCP/IP**.  
+
+// #### **Características do Sistema**  
+// - Os dados são organizados em **sequências de bytes de tamanho variável**, com um limite máximo de **512 bytes** por pacote.  
+// - Devido às características de roteamento das redes **TCP/IP**, os pacotes podem **chegar fora de ordem**, tornando necessária a **reordenação** antes do processamento.  
+// - Para permitir o acesso rápido aos dados, o sistema pode **processar as informações parcialmente ordenadas**, desde que os pacotes iniciais já estejam disponíveis.  
+// - Esse processamento é acionado quando uma **quantidade específica de pacotes** for recebida.  
+
+// ---
+
+// ### **Formato do Arquivo de Entrada**  
+// O arquivo de entrada contém os seguintes dados:  
+
+// 1. **Primeira linha:**  
+//    ```
+//    [número total de pacotes] [quantidade de pacotes para processamento]
+//    ```
+// 2. **Linhas seguintes:** Para cada pacote recebido, são fornecidos os seguintes valores:  
+//    ```
+//    [número do pacote] [tamanho do pacote] [B1] [B2] ... [Bm]
+//    ```
+//    Onde:  
+//    - **Número do pacote**: Identificador único do pacote.  
+//    - **Tamanho do pacote**: Número de bytes contidos no pacote.  
+//    - **B1 ... Bm**: Sequência de bytes do pacote.  
+
+// **Exemplo de entrada:**  
+// 6 2
+// 0 3 01 02 03
+// 1 2 04 05
+// 2 4 06 07 08 09
+// 4 2 0F 10
+// 3 5 0A 0B 0C 0D 0E
+// 5 6 11 12 13 14 15 16
+
+
+// ### **Formato do Arquivo de Saída**  
+// Sempre que a quantidade definida de pacotes for recebida, os pacotes disponíveis são **parcialmente ordenados**.  
+// - Se for possível formar a sequência inicial completa, os **dados desses pacotes são exibidos**.  
+
+// A saída contém os bytes ordenados na sequência correta conforme os pacotes forem sendo organizados.  
+// |01,02,03|04,05|
+// |06,07,08,09|
+// |0A,0B,0C,0D,0E|0F,10|11,12,13,14,15,16|
+
+
+
 
 
 
@@ -62,7 +116,48 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    int totalPacotes,pularPacotes;
+    
+    fscanf(arquivo, "%d%d", &totalPacotes,&pularPacotes);
+    Pacote *pacote = (Pacote *)malloc(totalPacotes * sizeof(Pacote));
+    if (pacote == NULL) {
+        printf("ERRO\n");
+    }
 
+    for (int i = 0; i < totalPacotes; i++) {
+
+        fscanf(arquivo, "%d%d",&pacote[i].indice, &pacote[i].tamanho);
+        pacote[i].dadosPacote = (char **)malloc(pacote[i].tamanho * sizeof(char *));
+        if (pacote[i].dadosPacote == NULL) {
+            printf("ERRO\n");
+        }    
+        for(int j=0;j<pacote[i].tamanho;j++){
+            pacote[i].dadosPacote[j] = (char *)malloc(512 * sizeof(char));
+            if (pacote[i].dadosPacote[j] == NULL) {
+                printf("ERRO: Falha ao alocar memória para dados do pacote.\n");
+            }
+            fscanf(arquivo, "%s", pacote[i].dadosPacote[j]);
+        }
+
+
+    }
+
+    for (int i = 0; i < totalPacotes; i++) {
+        fprintf(saida,"Pacote %d (Índice %d): ", i, pacote[i].indice);
+        for (int j = 0; j < pacote[i].tamanho; j++) {
+            fprintf(saida,"%s ", pacote[i].dadosPacote[j]);
+        }
+        fprintf(saida,"\n");
+    }
+    // Liberar memória alocada
+    for (int i = 0; i < totalPacotes; i++) {
+        for (int j = 0; j < pacote[i].tamanho; j++) {
+            free(pacote[i].dadosPacote[j]);            
+        }
+        free(pacote[i].dadosPacote);
+    }
+
+    free(pacote);
     fclose(arquivo);
     fclose(saida);
 
