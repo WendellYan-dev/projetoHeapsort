@@ -171,9 +171,7 @@ int main(int argc, char *argv[]) {
         indiceAtual = limite;
     }
     
-    for (int i = 0; i < totalPacotes; i++) {
-        free(pacote[i].dadosPacote);
-    }
+    //apaguei o for de free q limpa de todos
 
     free(pacote);
     fclose(arquivo);
