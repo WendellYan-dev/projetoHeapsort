@@ -4,7 +4,7 @@
 typedef struct{
     int indice;
     int tamanho;
-    char **dadosPacote;
+    char *dadosPacote;
 }Pacote;
 
 
@@ -127,17 +127,13 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < totalPacotes; i++) {
 
         fscanf(arquivo, "%d%d",&pacote[i].indice, &pacote[i].tamanho);
-        pacote[i].dadosPacote = (char **)malloc(pacote[i].tamanho * sizeof(char *));
+        pacote[i].dadosPacote = (char *)malloc(pacote[i].tamanho *sizeof(char));
         if (pacote[i].dadosPacote == NULL) {
             printf("ERRO\n");
         }    
 
-        for(int j=0;j<pacote[i].tamanho;j++){
-            pacote[i].dadosPacote[j] = (char *)malloc(512 * sizeof(char));
-            if (pacote[i].dadosPacote[j] == NULL) {
-                printf("ERRO: Falha ao alocar memória para dados do pacote.\n");
-            }
-            fscanf(arquivo, "%s", pacote[i].dadosPacote[j]);   
+        for (int j = 0; j < pacote[i].tamanho; j++) {
+            fscanf(arquivo, "%2hhx", &pacote[i].dadosPacote[j]);
         }
     }
 
@@ -145,39 +141,37 @@ int main(int argc, char *argv[]) {
     int lidos = 0;
 
     while(indiceAtual<totalPacotes) {
-
+        int k = 0;
         int limite = indiceAtual + pularPacotes;
         if(limite>totalPacotes) {
             limite = totalPacotes;
         }
 
-        heapsort(pacote,limite);
+        heapsort(pacote+lidos,limite-lidos);
 
-        fprintf(saida, "|");
+    
         for (int i = lidos; i < limite; i++) {
             if (pacote[i].indice == lidos) {
+                fprintf(saida, "|");
+                k =1;
                 for (int j = 0; j < pacote[i].tamanho; j++) {
-                    fprintf(saida, "%s", pacote[i].dadosPacote[j]);
+                    fprintf(saida, "%02X", (unsigned char)pacote[i].dadosPacote[j]);
                     if (j < pacote[i].tamanho - 1) {
                         fprintf(saida, ",");
                     }
                 }
-                fprintf(saida, "|");
                 lidos++;
-            }
+            } 
+        }
+        if(k==1){
+            fprintf(saida, "|");
+            fprintf(saida, "\n");
         }
         
-        fprintf(saida, "\n");
-
         indiceAtual = limite;
     }
     
-
-
     for (int i = 0; i < totalPacotes; i++) {
-        for (int j = 0; j < pacote[i].tamanho; j++) {
-            free(pacote[i].dadosPacote[j]);            
-        }
         free(pacote[i].dadosPacote);
     }
 
